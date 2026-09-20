@@ -11,7 +11,9 @@ on:
         default: ''
   workflow_run:
     # Auto-release: when CI succeeds on main, tag automatically if the VERSION
-    # file was bumped. The new tag then triggers the release build below.
+    # file was bumped, then build + publish in the SAME run (a tag pushed by
+    # GITHUB_TOKEN does not trigger new workflow runs — anti-recursion — so the
+    # release job is chained via job outputs instead of the tag push event).
     workflows: ['CI']
     types: [completed]
 
@@ -35,6 +37,8 @@ jobs:
       github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      tagged: ${{ steps.tag.outputs.tagged }}
     steps:
       - name: Checkout (full history for tags)
         uses: actions/checkout@v4
@@ -42,12 +46,14 @@ jobs:
           fetch-depth: 0
 
       - name: Tag when VERSION changed
+        id: tag
         run: |
           VERSION="$(tr -d '[:space:]' < VERSION)"
-          if [ -z "$VERSION" ]; then echo "VERSION file is empty"; exit 0; fi
+          if [ -z "$VERSION" ]; then echo "VERSION file is empty"; echo "tagged=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           LATEST="$(git tag --list 'v*' --sort=-v:refname | head -n1 || true)"
           if [ "v$VERSION" = "$LATEST" ]; then
             echo "Version $LATEST already tagged — nothing to release."
+            echo "tagged=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "Bumping release: $LATEST -> v$VERSION"
@@ -55,10 +61,18 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag "v$VERSION"
           git push origin "v$VERSION"
+          echo "tagged=true" >> "$GITHUB_OUTPUT"
 
   release:
     name: Build + publish release
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: auto-tag
+    if: >-
+      always() &&
+      (
+        (needs.auto-tag.result == 'success' && needs.auto-tag.outputs.tagged == 'true') ||
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
