@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
@@ -25,7 +24,7 @@ val hasReleaseSigning = !ksFile.isNullOrBlank() && !ksPassword.isNullOrBlank() &
 
 android {
     namespace = "com.localai.runtime"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.localai.runtime"
@@ -64,13 +63,17 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
-        compose = true
         buildConfig = true
     }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+            // BouncyCastle (bcprov/bcpkix/bcutil) all ship LICENSE.md/NOTICE.md
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/LICENSE.txt"
+            excludes += "/META-INF/NOTICE.md"
+            excludes += "/META-INF/NOTICE.txt"
         }
     }
 }
