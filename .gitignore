@@ -17,3 +17,7 @@ api-server/build
 *.p12
 !debug.keystore
 .kotlin
+
+# Python tooling artifacts
+__pycache__/
+*.pyc

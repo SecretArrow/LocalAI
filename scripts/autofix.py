@@ -110,6 +110,19 @@ KOTLIN_ERR = re.compile(r"^e: file://(/[^:]+):(\d+)(?::\d+)?\s+(.+)$", re.MULTIL
 TASK_FAIL = re.compile(r"Execution failed for task '([^']+)'")
 WENT_WRONG = re.compile(r"What went wrong:\s*\n((?:.*\n){1,8})", re.MULTILINE)
 
+# R8 release builds: "Missing class java.lang.management.ManagementFactory"
+R8_MISSING_CLASS = re.compile(r"Missing class ([\w.$]+)")
+
+# detekt findings, two shapes:
+#   txt report:    "EmptyCatchBlock - [broken] at /abs/F.kt:6:58 - Signature=..."
+#                 "LongMethod - 283/120 - [openAiRoutes] at /abs/F.kt:144:26 - ..."
+#   console line:  "/abs/F.kt:6:58: Empty catch block detected. ... [EmptyCatchBlock]"
+DETEKT_TXT = re.compile(
+    r"^([A-Za-z]\w*) - (?:\d+/\d+ - )?\[[^\]]*\] at (/[^:]+\.kt):(\d+):(\d+) - Signature=",
+    re.MULTILINE,
+)
+DETEKT_CONSOLE = re.compile(r"^(/[^:\n]+\.kt):(\d+):(\d+): (.+) \[([A-Za-z]\w*)\]$", re.MULTILINE)
+
 
 class Diag:
     def __init__(self, text: str) -> None:
@@ -120,6 +133,13 @@ class Diag:
         ]
         self.failed_tasks = sorted(set(TASK_FAIL.findall(text)))
         self.went_wrong = [m.group(1).strip() for m in WENT_WRONG.finditer(text)]
+        self.missing_classes = sorted(set(R8_MISSING_CLASS.findall(text)))
+        detekt: dict[tuple[str, int, str], str] = {}
+        for rule, path, line, _col in DETEKT_TXT.findall(text):
+            detekt.setdefault((path, int(line), rule), f"detekt {rule}")
+        for path, line, _col, msg, rule in DETEKT_CONSOLE.findall(text):
+            detekt.setdefault((path, int(line), rule), f"detekt {rule}: {msg}")
+        self.detekt_violations = sorted(detekt.items())
 
     @property
     def has_compile_errors(self) -> bool:
@@ -277,6 +297,31 @@ def fix_unresolved_imports(diag: Diag) -> list[str]:
     return notes
 
 
+def fix_missing_r8_classes(diag: Diag) -> list[str]:
+    """Silence R8 'Missing class' errors from JVM-only libraries.
+
+    Release builds fail when R8 encounters classes referenced by dependencies
+    (Ktor, Coroutines debug hooks, ...) that do not exist on Android. The
+    established fix — already proven on this repo for JMX classes — is to add
+    -dontwarn lines to the app's keep-rules file.
+    """
+    rules = Path("app/proguard-rules.pro")
+    if not rules.exists() or not diag.missing_classes:
+        return []
+    text = rules.read_text()
+    add = [c for c in diag.missing_classes if f"-dontwarn {c}" not in text]
+    if not add:
+        return []
+    block = (
+        "\n# auto-fix: R8 missing classes (referenced by JVM-only libraries)\n"
+        + "\n".join(f"-dontwarn {c}" for c in add)
+        + "\n"
+    )
+    rules.write_text(text.rstrip("\n") + "\n" + block)
+    shown = ", ".join(add[:5]) + (" ..." if len(add) > 5 else "")
+    return [f"added -dontwarn for {len(add)} R8 missing class(es): {shown}"]
+
+
 def rerun_failed_workflow() -> bool:
     """Re-run the failed CI job (used for transient network/lock failures)."""
     run_id = os.environ.get("FAILED_RUN_ID", "").strip()
@@ -376,6 +421,9 @@ def llm_fixes(diag: Diag) -> list[str]:
     per_file: dict[str, list[str]] = {}
     for path, line, msg in diag.kotlin_errors:
         per_file.setdefault(path, []).append(f"line {line}: {msg}")
+    # detekt violations join the same per-file LLM repair path.
+    for (path, line, rule), desc in diag.detekt_violations:
+        per_file.setdefault(path, []).append(f"line {line}: {desc}")
 
     for i, (path, errs) in enumerate(per_file.items()):
         if i >= MAX_LLM_FILES:
@@ -387,10 +435,12 @@ def llm_fixes(diag: Diag) -> list[str]:
         source = p.read_text(errors="replace")
         system = (
             "You are a build-fixing agent for a Kotlin/Android project. "
-            "You receive compilation errors for ONE file plus its full source. "
+            "You receive compilation errors and/or static-analysis violations "
+            "for ONE file plus its full source. "
             "Reply with a SINGLE unified diff (git format) that fixes the errors. "
             "Output ONLY the diff, no prose, no markdown fences. "
-            "Keep changes minimal and correct."
+            "Keep changes minimal and correct. For detekt style rules prefer the "
+            "smallest conforming change over restructuring."
         )
         user = (
             f"File: {p}\n\nCompilation errors:\n" + "\n".join(errs[:30]) + "\n\n"
@@ -417,6 +467,54 @@ def llm_fixes(diag: Diag) -> list[str]:
         else:
             log(f"LLM patch for {p} did not apply: {proc.stderr.strip()[:200]}")
     return notes
+
+
+def llm_generic_fix(diag: Diag) -> list[str]:
+    """LLM fallback for non-compile failures (R8, lintVital, manifest...).
+
+    Used when the failure has a Gradle "What went wrong" section but no
+    Kotlin compile errors — typical for release builds. The model receives
+    the failure text plus the repository file list and returns one diff.
+    """
+    cfg = llm_config()
+    if cfg is None:
+        return []
+    url, key, model = cfg
+    failure = "\n".join(diag.went_wrong[:6]) or "(no detail)"
+    tasks = ", ".join(diag.failed_tasks) or "(unknown)"
+    listing = sh("git", "ls-files", check=False).stdout.strip()
+    system = (
+        "You are a build-fixing agent for a Kotlin/Android project. "
+        "You receive a Gradle build failure summary and the list of repository "
+        "files. Diagnose the root cause, pick the minimal set of files to "
+        "change, and reply with a SINGLE unified diff (git format). "
+        "Output ONLY the diff, no prose, no markdown fences. "
+        "If the failure is caused by missing secrets or environment inputs, "
+        "reply with exactly NOFIX."
+    )
+    user = (
+        f"Failed tasks: {tasks}\n\nFailure detail:\n{failure}\n\n"
+        f"Repository files:\n{listing}\n\nProduce the unified diff now."
+    )
+    log(f"asking {model} for a generic fix (tasks={tasks})")
+    diff = llm_chat(url, key, model, system, user)
+    if not diff:
+        return []
+    diff = diff.strip()
+    if diff.startswith("```"):
+        diff = re.sub(r"^```[a-z]*\n|\n```$", "", diff)
+    if not diff.startswith("---") or diff == "NOFIX":
+        return []
+    proc = subprocess.run(
+        ["git", "apply", "--recount", "--whitespace=nowarn", "-"],
+        input=diff,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode == 0:
+        return ["LLM generic patch applied"]
+    log(f"generic LLM patch did not apply: {proc.stderr.strip()[:200]}")
+    return []
 
 
 # ---------------------------------------------------------------------------
@@ -446,7 +544,9 @@ def main() -> int:
         f"failed tasks={diag.failed_tasks}, "
         f"oom={diag.has_oom}, ndk={diag.has_ndk_issue}, "
         f"native_fetch={diag.has_native_fetch_issue}, "
-        f"tests={diag.has_test_failures}"
+        f"tests={diag.has_test_failures}, "
+        f"r8_missing={len(diag.missing_classes)}, "
+        f"detekt={len(diag.detekt_violations)}"
     )
 
     if not any(
@@ -457,6 +557,8 @@ def main() -> int:
             diag.has_native_fetch_issue,
             diag.has_test_failures,
             diag.went_wrong,
+            diag.missing_classes,
+            diag.detekt_violations,
         ]
     ):
         log("no recognised failure signatures — nothing to fix")
@@ -477,7 +579,13 @@ def main() -> int:
     if diag.kotlin_errors:
         applied.extend(fix_unresolved_imports(diag))
 
+    if diag.missing_classes:
+        applied.extend(fix_missing_r8_classes(diag))
+
     applied.extend(llm_fixes(diag))
+
+    if not applied and (diag.went_wrong or diag.missing_classes):
+        applied.extend(llm_generic_fix(diag))
 
     if diag.has_native_fetch_issue or diag.has_lock_issue:
         if rerun_failed_workflow():

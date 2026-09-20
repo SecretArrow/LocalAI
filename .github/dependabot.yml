@@ -1,0 +1,36 @@
+version: 2
+updates:
+  # Gradle dependencies (includes the gradle/libs.versions.toml version
+  # catalog — Dependabot understands it natively and propagates bumps).
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Jakarta
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+    groups:
+      # Bundle safe patch/minor bumps so the CI (and auto-fix) only runs once.
+      patch-and-minor:
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions workflow versions (actions/checkout, setup-java, ...).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: 'chore(ci-deps)'

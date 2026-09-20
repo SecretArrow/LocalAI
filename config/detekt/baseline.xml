@@ -1,0 +1,155 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:DownloadManager.kt$DownloadManager$expectedTotal &gt; 0 &amp;&amp; existing == expectedTotal &amp;&amp; part.isFile &amp;&amp; part.length() == expectedTotal</ID>
+    <ID>ComplexCondition:DownloadManager.kt$DownloadManager$range != null &amp;&amp; expectedTotal &gt; 0 &amp;&amp; range.third &gt; 0 &amp;&amp; range.third != expectedTotal</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$ChatCompletionChoice$val finish_reason: String?</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$ChunkChoice$val finish_reason: String? = null</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$OpenAiChatRequest$val max_tokens: Int? = null</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$OpenAiChatRequest$val top_p: Double? = null</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$OpenAiCompletionRequest$val max_tokens: Int? = null</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$OpenAiCompletionRequest$val top_p: Double? = null</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$OpenAiModelInfo$val owned_by: String = "local"</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$TextCompletionChoice$val finish_reason: String? = null</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$UsageInfo$val completion_tokens: Int</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$UsageInfo$val prompt_tokens: Int</ID>
+    <ID>ConstructorParameterNaming:RoutesOpenAi.kt$UsageInfo$val total_tokens: Int</ID>
+    <ID>CyclomaticComplexMethod:ApiServerScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ApiServerScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>CyclomaticComplexMethod:ChatScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ChatScreen(container: AppContainer)</ID>
+    <ID>CyclomaticComplexMethod:ConfigPorter.kt$ConfigPorter$suspend fun importModelConfig(modelId: String, json: String): Result&lt;Unit&gt;</ID>
+    <ID>CyclomaticComplexMethod:ConfigPorter.kt$ConfigPorter$suspend fun importSettingsJson(json: String): Result&lt;Int&gt;</ID>
+    <ID>CyclomaticComplexMethod:DeviceProbe.kt$DeviceProbe$fun probe(): DeviceCapabilities</ID>
+    <ID>CyclomaticComplexMethod:DeviceProbe.kt$DeviceProbe$private fun queryGpu(): Pair&lt;String, String&gt;</ID>
+    <ID>CyclomaticComplexMethod:DownloadManager.kt$DownloadManager$private suspend fun runWorker(id: Long)</ID>
+    <ID>CyclomaticComplexMethod:DownloadManager.kt$DownloadManager$private suspend fun runWorkerOnce(id: Long, control: Control)</ID>
+    <ID>CyclomaticComplexMethod:HomeScreen.kt$@Composable fun HomeScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>CyclomaticComplexMethod:LanAddresses.kt$LanAddresses$fun ipv4Addresses(context: Context): List&lt;String&gt;</ID>
+    <ID>CyclomaticComplexMethod:LogsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun LogsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>CyclomaticComplexMethod:ModelDetailScreen.kt$@Composable fun ModelDetailScreen(container: AppContainer, navController: NavHostController, modelId: String)</ID>
+    <ID>CyclomaticComplexMethod:ModelDetailScreen.kt$@Composable private fun ConfigEditor( initial: RuntimeConfig, backends: List&lt;BackendInfo&gt;, model: ModelInfo, onSave: (RuntimeConfig) -&gt; Unit, )</ID>
+    <ID>CyclomaticComplexMethod:ModelsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ModelsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>CyclomaticComplexMethod:ModelsViewModel.kt$ModelsViewModel$fun importModel(uri: Uri)</ID>
+    <ID>CyclomaticComplexMethod:ModelsViewModel.kt$ModelsViewModel$private fun syncTerminalDownload(progress: DownloadProgress)</ID>
+    <ID>CyclomaticComplexMethod:RoutesOpenAi.kt$internal fun Application.openAiRoutes( engine: InferenceEngine, registry: ModelRegistry, maxBodyBytes: Long, )</ID>
+    <ID>CyclomaticComplexMethod:RuntimeCoordinator.kt$RuntimeCoordinator$override suspend fun start(modelId: String): ServerModel</ID>
+    <ID>CyclomaticComplexMethod:SettingsRepository.kt$SettingsRepository$private fun Preferences.toAppSettings(): AppSettings</ID>
+    <ID>CyclomaticComplexMethod:SettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:AboutScreen.kt$@Composable fun AboutScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:ApiDocsScreen.kt$@Composable fun ApiDocsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:ApiDocsScreen.kt$@Composable private fun CodeBlock(title: String? = null, code: String)</ID>
+    <ID>FunctionNaming:ApiDocsScreen.kt$@Composable private fun EndpointRow(endpoint: Endpoint)</ID>
+    <ID>FunctionNaming:ApiDocsScreen.kt$@Composable private fun MethodBadge(method: String)</ID>
+    <ID>FunctionNaming:ApiServerScreen.kt$@Composable private fun EndpointChip(url: String, label: String? = null)</ID>
+    <ID>FunctionNaming:ApiServerScreen.kt$@Composable private fun LinkRow( title: String, subtitle: String, icon: ImageVector, onClick: () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ApiServerScreen.kt$@Composable private fun WarningCard(text: String)</ID>
+    <ID>FunctionNaming:ApiServerScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ApiServerScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:BenchmarkScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun BenchmarkScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:BenchmarkScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable private fun ModelDropdown( models: List&lt;ModelInfo&gt;, selectedModelId: String?, onSelect: (String) -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ChatScreen.kt$@Composable private fun CodeBlock(code: String)</ID>
+    <ID>FunctionNaming:ChatScreen.kt$@Composable private fun ErrorBanner( message: String, onDismiss: () -&gt; Unit, dismissible: Boolean, modifier: Modifier = Modifier, )</ID>
+    <ID>FunctionNaming:ChatScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun MessageBubble( message: UiMessage, maxBubbleWidth: Dp, onLongPress: () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ChatScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ChatScreen(container: AppContainer)</ID>
+    <ID>FunctionNaming:ChatScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable private fun ModelSelector( runningModels: List&lt;ModelInfo&gt;, selectedModelId: String?, onSelect: (String) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
+    <ID>FunctionNaming:CommonComponents.kt$@Composable fun EmptyState(title: String, subtitle: String? = null, modifier: Modifier = Modifier)</ID>
+    <ID>FunctionNaming:CommonComponents.kt$@Composable fun ErrorPanel( message: String, modifier: Modifier = Modifier, detail: String? = null, onRetry: (() -&gt; Unit)? = null, )</ID>
+    <ID>FunctionNaming:CommonComponents.kt$@Composable fun KeyValueRow(key: String, value: String, modifier: Modifier = Modifier)</ID>
+    <ID>FunctionNaming:CommonComponents.kt$@Composable fun ProgressRow( progress: Int, downloaded: String, total: String, speed: String? = null, eta: String? = null, modifier: Modifier = Modifier, )</ID>
+    <ID>FunctionNaming:CommonComponents.kt$@Composable fun SectionCard( title: String? = null, modifier: Modifier = Modifier, content: @Composable () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:CommonComponents.kt$@Composable fun StatCard( label: String, value: String, modifier: Modifier = Modifier, supporting: String? = null, )</ID>
+    <ID>FunctionNaming:CommonComponents.kt$@Composable fun StatusChip(state: ModelState, modifier: Modifier = Modifier)</ID>
+    <ID>FunctionNaming:DevicesScreen.kt$@Composable private fun ScreenHeader(title: String, onBack: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:DevicesScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DevicesScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:DownloadsScreen.kt$@Composable fun DownloadsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:DownloadsScreen.kt$@Composable private fun DownloadCard( download: DownloadProgress, onPause: () -&gt; Unit, onResume: () -&gt; Unit, onCancel: () -&gt; Unit, onRetry: () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:DownloadsScreen.kt$@Composable private fun DownloadStateLabel(state: DownloadState)</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable fun HomeScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable internal fun MessageBar(message: String, onDismiss: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun MoreRow(icon: ImageVector, label: String, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:LogsScreen.kt$@Composable private fun ApiLogRow(record: ApiLogRecord)</ID>
+    <ID>FunctionNaming:LogsScreen.kt$@Composable private fun AppLogRow(line: LogLine)</ID>
+    <ID>FunctionNaming:LogsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun LogsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:MainActivity.kt$@Composable private fun AppNavHost( navController: NavHostController, container: com.localai.runtime.runtime.AppContainer, modifier: Modifier = Modifier, )</ID>
+    <ID>FunctionNaming:MainActivity.kt$@Composable private fun BottomBar(navController: NavHostController)</ID>
+    <ID>FunctionNaming:MainActivity.kt$@Composable private fun Rail(navController: NavHostController)</ID>
+    <ID>FunctionNaming:MainActivity.kt$@Composable private fun RootLayout(container: com.localai.runtime.runtime.AppContainer)</ID>
+    <ID>FunctionNaming:ModelDetailScreen.kt$@Composable fun ModelDetailScreen(container: AppContainer, navController: NavHostController, modelId: String)</ID>
+    <ID>FunctionNaming:ModelDetailScreen.kt$@Composable private fun ConfigEditor( initial: RuntimeConfig, backends: List&lt;BackendInfo&gt;, model: ModelInfo, onSave: (RuntimeConfig) -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ModelDetailScreen.kt$@Composable private fun LabeledSlider( label: String, valueText: String, value: Float, onValue: (Float) -&gt; Unit, valueRange: ClosedFloatingPointRange&lt;Float&gt;, steps: Int = 0, supporting: String? = null, enabled: Boolean = true, )</ID>
+    <ID>FunctionNaming:ModelDetailScreen.kt$@Composable private fun ShaRow(sha256: String)</ID>
+    <ID>FunctionNaming:ModelDetailScreen.kt$@Composable private fun SwitchRow( label: String, checked: Boolean, onCheckedChange: (Boolean) -&gt; Unit, supporting: String? = null, )</ID>
+    <ID>FunctionNaming:ModelsScreen.kt$@Composable private fun BackendBadge(model: ModelInfo)</ID>
+    <ID>FunctionNaming:ModelsScreen.kt$@Composable private fun Badge(text: String)</ID>
+    <ID>FunctionNaming:ModelsScreen.kt$@Composable private fun CatalogCard( entry: CatalogEntry, isInstalled: Boolean, isNew: Boolean, isUpdate: Boolean, onDownload: () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ModelsScreen.kt$@Composable private fun CatalogHeader(state: ModelsUiState, onRefresh: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:ModelsScreen.kt$@Composable private fun DownloadProgressBlock( progress: DownloadProgress, onPause: () -&gt; Unit, onResume: () -&gt; Unit, onCancel: () -&gt; Unit, onRetry: () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ModelsScreen.kt$@Composable private fun ModelCard( model: ModelInfo, download: DownloadProgress?, onRun: () -&gt; Unit, onStop: () -&gt; Unit, onDelete: () -&gt; Unit, onPauseDownload: () -&gt; Unit, onResumeDownload: () -&gt; Unit, onCancelDownload: () -&gt; Unit, onRetryDownload: () -&gt; Unit, onClick: () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ModelsScreen.kt$@Composable private fun UrlDialog( probing: Boolean, onDismiss: () -&gt; Unit, onCheck: (String) -&gt; Unit, )</ID>
+    <ID>FunctionNaming:ModelsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ModelsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:MonitoringScreen.kt$@Composable fun MonitoringScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:MonitoringScreen.kt$@Composable private fun InfoChip(text: String)</ID>
+    <ID>FunctionNaming:MonitoringScreen.kt$@Composable private fun ModelStatCard( stat: EngineStats, modelName: String, tpsHistory: List&lt;Float&gt;, )</ID>
+    <ID>FunctionNaming:MonitoringScreen.kt$@Composable private fun Sparkline( values: List&lt;Float&gt;, modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.primary, )</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@Composable private fun ChoiceChip(label: String, selected: Boolean, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@Composable private fun FieldRow( label: String, value: String, onValueChange: (String) -&gt; Unit, )</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@Composable private fun LinkRow( title: String, subtitle: String, icon: ImageVector, onClick: () -&gt; Unit, )</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@Composable private fun PortField( label: String, value: Int, onValid: (Int) -&gt; Unit, )</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@Composable private fun SliderRow( title: String, valueLabel: String, value: Float, onValueChange: (Float) -&gt; Unit, valueRange: ClosedFloatingPointRange&lt;Float&gt;, steps: Int = 0, )</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@Composable private fun SwitchRow( title: String, checked: Boolean, onCheckedChange: (Boolean) -&gt; Unit, subtitle: String? = null, )</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable private fun &lt;T&gt; DropdownRow( label: String, options: List&lt;Pair&lt;String, T?&gt;&gt;, selected: T?, onSelect: (T?) -&gt; Unit, )</ID>
+    <ID>FunctionNaming:StorageScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun StorageScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>FunctionNaming:Theme.kt$@Composable fun LocalAiTheme( darkMode: DarkMode = DarkMode.SYSTEM, dynamicColor: Boolean = false, content: @Composable () -&gt; Unit, )</ID>
+    <ID>ImplicitDefaultLocale:TokenGenerator.kt$TokenGenerator$String.format("%06d", random.nextInt(1_000_000))</ID>
+    <ID>InstanceOfCheckForException:DownloadManager.kt$DownloadManager$e is IOException</ID>
+    <ID>LargeClass:DownloadManager.kt$DownloadManager</ID>
+    <ID>LongMethod:ApiDocsScreen.kt$@Composable fun ApiDocsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>LongMethod:ApiServerScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ApiServerScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>LongMethod:ChatScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ChatScreen(container: AppContainer)</ID>
+    <ID>LongMethod:DevicesScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun DevicesScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>LongMethod:DownloadManager.kt$DownloadManager$private suspend fun runWorkerOnce(id: Long, control: Control)</ID>
+    <ID>LongMethod:HomeScreen.kt$@Composable fun HomeScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>LongMethod:LogsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun LogsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>LongMethod:ModelDetailScreen.kt$@Composable fun ModelDetailScreen(container: AppContainer, navController: NavHostController, modelId: String)</ID>
+    <ID>LongMethod:ModelDetailScreen.kt$@Composable private fun ConfigEditor( initial: RuntimeConfig, backends: List&lt;BackendInfo&gt;, model: ModelInfo, onSave: (RuntimeConfig) -&gt; Unit, )</ID>
+    <ID>LongMethod:ModelsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun ModelsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>LongMethod:RoutesNative.kt$internal fun Application.nativeRoutes( registry: ModelRegistry, engine: InferenceEngine, state: ServerState, env: ServerEnv, tlsActive: () -&gt; Boolean, logsSupplier: (limit: Int) -&gt; List&lt;ServerLogEntry&gt;, )</ID>
+    <ID>LongMethod:RoutesOpenAi.kt$internal fun Application.openAiRoutes( engine: InferenceEngine, registry: ModelRegistry, maxBodyBytes: Long, )</ID>
+    <ID>LongMethod:SettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>LongMethod:StorageScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun StorageScreen(container: AppContainer, navController: NavHostController)</ID>
+    <ID>LongParameterList:ApiServer.kt$( registry: ModelRegistry, engine: InferenceEngine, auth: AuthStore, env: ServerEnv, logSink: ServerLogSink, ring: RequestLogRing, state: ServerState, tlsActive: () -&gt; Boolean = { false }, rateLimiter: RateLimiter = RateLimiter(), )</ID>
+    <ID>LongParameterList:LlamaBridge.kt$LlamaBridge$( modelPtr: Long, roles: Array&lt;String&gt;, contents: Array&lt;String&gt;, temperature: Float, topP: Float, topK: Int, minP: Float, repeatPenalty: Float, seed: Int, maxTokens: Int, onToken: (String) -&gt; Boolean, )</ID>
+    <ID>LongParameterList:ModelDetailScreen.kt$( label: String, valueText: String, value: Float, onValue: (Float) -&gt; Unit, valueRange: ClosedFloatingPointRange&lt;Float&gt;, steps: Int = 0, supporting: String? = null, enabled: Boolean = true, )</ID>
+    <ID>LongParameterList:ModelsScreen.kt$( model: ModelInfo, download: DownloadProgress?, onRun: () -&gt; Unit, onStop: () -&gt; Unit, onDelete: () -&gt; Unit, onPauseDownload: () -&gt; Unit, onResumeDownload: () -&gt; Unit, onCancelDownload: () -&gt; Unit, onRetryDownload: () -&gt; Unit, onClick: () -&gt; Unit, )</ID>
+    <ID>LoopWithTooManyJumpStatements:DownloadManager.kt$DownloadManager$for</ID>
+    <ID>LoopWithTooManyJumpStatements:DownloadManager.kt$DownloadManager$while</ID>
+    <ID>LoopWithTooManyJumpStatements:LanAddresses.kt$LanAddresses$while</ID>
+    <ID>LoopWithTooManyJumpStatements:RuntimeCoordinator.kt$RuntimeCoordinator$while</ID>
+    <ID>MatchingDeclarationName:LlamaCpuBackend.kt$CpuBackend : InferenceBackend</ID>
+    <ID>NestedBlockDepth:DownloadManager.kt$DownloadManager$private suspend fun runWorkerOnce(id: Long, control: Control)</ID>
+    <ID>NestedBlockDepth:LanAddresses.kt$LanAddresses$fun ipv4Addresses(context: Context): List&lt;String&gt;</ID>
+    <ID>ReturnCount:DeviceProbe.kt$DeviceProbe$private fun queryGpu(): Pair&lt;String, String&gt;</ID>
+    <ID>SwallowedException:ApiServer.kt$ApiServer$t: Throwable</ID>
+    <ID>SwallowedException:CatalogRepository.kt$CatalogRepository$e: AtomicMoveNotSupportedException</ID>
+    <ID>SwallowedException:LanAdvertiser.kt$LanAdvertiser$t: Throwable</ID>
+    <ID>SwallowedException:PairingManager.kt$PairingManager$t: Throwable</ID>
+    <ID>SwallowedException:QrCodes.kt$QrCodes$e: WriterException</ID>
+    <ID>SwallowedException:QrCodes.kt$QrCodes$t: Throwable</ID>
+    <ID>SwallowedException:RoutesNative.kt$t: Throwable</ID>
+    <ID>SwallowedException:RoutesOpenAi.kt$t: Throwable</ID>
+    <ID>SwallowedException:RuntimeCoordinator.kt$RuntimeCoordinator$e: Throwable</ID>
+    <ID>SwallowedException:RuntimeCoordinator.kt$RuntimeCoordinator$t: Throwable</ID>
+    <ID>SwallowedException:RuntimeServerEnv.kt$RuntimeServerEnv$t: Throwable</ID>
+    <ID>SwallowedException:RuntimeService.kt$RuntimeService$t: Throwable</ID>
+    <ID>SwallowedException:RuntimeService.kt$RuntimeService.Companion$t: Throwable</ID>
+    <ID>SwallowedException:SelfSignedCert.kt$SelfSignedCert.Companion$t: Throwable</ID>
+    <ID>ThrowsCount:DownloadManager.kt$DownloadManager$private suspend fun runWorkerOnce(id: Long, control: Control)</ID>
+    <ID>UnusedParameter:AboutScreen.kt$container: AppContainer</ID>
+    <ID>UnusedParameter:DownloadsScreen.kt$navController: NavHostController</ID>
+    <ID>UnusedParameter:LanAddresses.kt$LanAddresses$context: Context</ID>
+    <ID>UnusedPrivateProperty:ConfigPorter.kt$ConfigPorter$private val context: Context</ID>
+    <ID>UnusedPrivateProperty:PairingManager.kt$PairingManager$private val secretStore: SecretStore</ID>
+    <ID>UseCheckOrError:StorageViewModel.kt$StorageViewModel$throw IllegalStateException("Could not read the selected file")</ID>
+    <ID>UseRequire:KeystoreCipher.kt$KeystoreCipher$throw IllegalArgumentException("Encrypted blob too short (${blob.size} bytes)")</ID>
+  </CurrentIssues>
+</SmellBaseline>

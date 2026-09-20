@@ -45,15 +45,30 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Tag when VERSION changed
+      - name: Tag when VERSION changed (or retry incomplete release)
         id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           VERSION="$(tr -d '[:space:]' < VERSION)"
           if [ -z "$VERSION" ]; then echo "VERSION file is empty"; echo "tagged=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           LATEST="$(git tag --list 'v*' --sort=-v:refname | head -n1 || true)"
           if [ "v$VERSION" = "$LATEST" ]; then
-            echo "Version $LATEST already tagged — nothing to release."
-            echo "tagged=false" >> "$GITHUB_OUTPUT"
+            # The tag already exists — but if a previous release build failed
+            # before publishing (e.g. R8/lint failure fixed by Auto-fix since),
+            # there is no published release for it and we must retry.
+            echo "Tag v$VERSION exists — checking whether its release was published…"
+            HTTP="$(curl -s -o "$RUNNER_TEMP/rel.json" -w '%{http_code}' \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/tags/v$VERSION")"
+            if [ "$HTTP" = "200" ] && jq -e '.assets | any(.name | endswith(".apk"))' "$RUNNER_TEMP/rel.json" >/dev/null 2>&1; then
+              echo "Release v$VERSION already published with an APK — nothing to do."
+              echo "tagged=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Tag exists but the release is missing or incomplete — re-running the release build."
+            echo "tagged=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "Bumping release: $LATEST -> v$VERSION"

@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    # Weekly bitrot check: toolchain/dependency drift caught even when nobody
+    # pushes. A failure here feeds Auto-fix like any other CI failure.
+    - cron: '30 6 * * 1'
   workflow_dispatch:
 
 # Fast pipeline: cancel outdated runs of the same branch/PR.

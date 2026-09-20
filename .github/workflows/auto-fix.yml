@@ -1,14 +1,17 @@
 name: Auto-fix
 
-# Self-healing pipeline: when CI fails on main, parse the failure logs,
-# apply deterministic fixes (and LLM-assisted fixes when an API key secret
-# is configured), then push a fix commit back to main — which re-triggers CI.
+# Self-healing pipeline: when CI, Release, or Quality fails on main, parse the
+# failure logs, apply deterministic fixes (and LLM-assisted fixes when an API
+# key secret is configured), then push a fix commit back to main — which
+# re-triggers CI. Release failures (R8 missing classes, lintVital, manifest
+# merges) and Quality failures (new detekt issues) are covered too.
+#
 # Loop safety: scripts/autofix.py caps itself at MAX_ATTEMPTS fix commits
 # after the last human commit.
 
 on:
   workflow_run:
-    workflows: ['CI']
+    workflows: ['CI', 'Release', 'Quality']
     types: [completed]
 
 permissions:
@@ -21,11 +24,10 @@ concurrency:
 
 jobs:
   fix:
-    name: Diagnose and fix CI failure
+    name: Diagnose and fix failure
     if: >-
       github.event.workflow_run.conclusion == 'failure' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.event == 'push'
+      github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -35,6 +37,8 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      # The failed run uploaded exactly one of these artifacts depending on
+      # which workflow failed; download whichever exists.
       - name: Download CI failure diagnostics
         uses: actions/download-artifact@v4
         with:
@@ -42,6 +46,33 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: ci-logs
+        continue-on-error: true
+
+      - name: Download Release failure diagnostics
+        uses: actions/download-artifact@v4
+        with:
+          name: release-logs
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ci-logs
+        continue-on-error: true
+
+      - name: Download Quality failure diagnostics
+        uses: actions/download-artifact@v4
+        with:
+          name: quality-logs
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ci-logs
+        continue-on-error: true
+
+      - name: Verify diagnostics downloaded
+        run: |
+          if [ -z "$(ls -A ci-logs 2>/dev/null)" ]; then
+            echo "::notice::The failed run uploaded no diagnostics — nothing to parse."
+            exit 1
+          fi
+          ls -la ci-logs/
 
       - name: Set up Python
         uses: actions/setup-python@v5
