@@ -103,11 +103,9 @@ class BackendRegistry(
  * - NPU:     "No public NPU API exposed by this device"
  */
 class StubBackend(
-    private val type: BackendType,
+    override val type: BackendType,
     private val reason: String,
 ) : InferenceBackend {
-
-    override val type: BackendType = type
 
     override suspend fun detect(capabilities: com.localai.runtime.core.model.DeviceCapabilities): BackendInfo =
         BackendInfo(type = type, availability = Availability.UNAVAILABLE, reason = reason)
