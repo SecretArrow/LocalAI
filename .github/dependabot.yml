@@ -27,6 +27,16 @@ updates:
       - dependency-name: "*"
         update-types:
           - "version-update:semver-major"
+      # Hold Kotlin at 2.4.10: CodeQL 2.27.0 (latest CLI) rejects Kotlin
+      # >= 2.4.20 during manual-build extraction ("Kotlin version 2.4.20 is
+      # too recent"). Remove these ignores and bump Kotlin once a CodeQL
+      # release supports 2.4.20+.
+      - dependency-name: "org.jetbrains.kotlin.jvm"
+        versions: ["2.4.20", "2.4.21", "2.4.30", "2.4.31"]
+      - dependency-name: "org.jetbrains.kotlin.plugin.compose"
+        versions: ["2.4.20", "2.4.21", "2.4.30", "2.4.31"]
+      - dependency-name: "org.jetbrains.kotlin.plugin.serialization"
+        versions: ["2.4.20", "2.4.21", "2.4.30", "2.4.31"]
 
   # GitHub Actions workflow versions (actions/checkout, setup-java, ...).
   - package-ecosystem: github-actions
