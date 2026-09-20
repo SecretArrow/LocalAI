@@ -14,7 +14,7 @@ import com.localai.runtime.server.api.ServerEnv
 import com.localai.runtime.server.api.ServerLogEntry
 import com.localai.runtime.server.api.ServerLogSink
 import com.localai.runtime.server.api.ServerModel
-import io.ktor.client.request.contentType
+import io.ktor.http.contentType
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
