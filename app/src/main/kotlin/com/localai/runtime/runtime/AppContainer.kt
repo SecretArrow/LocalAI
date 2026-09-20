@@ -242,7 +242,7 @@ class AppContainer(val context: Context) {
 
     fun scheduleCatalogRefresh(hours: Int) {
         val request = PeriodicWorkRequestBuilder<CatalogRefreshWorker>(
-            hours.coerceAtLeast(1), TimeUnit.HOURS,
+            hours.coerceAtLeast(1).toLong(), TimeUnit.HOURS,
         )
             .setConstraints(
                 Constraints.Builder()

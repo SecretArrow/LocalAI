@@ -7,6 +7,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import kotlin.io.path.createTempDirectory
+import kotlinx.coroutines.runBlocking
 
 /**
  * Pure JVM tests for [Hashing] (byte-array + streamed file SHA-256, constant-time equality).
@@ -44,7 +45,7 @@ class HashingTest {
             val file = File(dir, "payload.bin")
             file.writeBytes(payload)
 
-            assertEquals(Hashing.sha256(payload), Hashing.sha256(file))
+            assertEquals(Hashing.sha256(payload), runBlocking { Hashing.sha256(file) })
             assertEquals(payload.size.toLong(), file.length())
         } finally {
             dir.deleteRecursively()
@@ -61,9 +62,11 @@ class HashingTest {
 
             var seen = 0L
             var callbackCount = 0
-            val digest = Hashing.sha256(file) { processed ->
-                seen = processed
-                callbackCount++
+            val digest = runBlocking {
+                Hashing.sha256(file) { processed ->
+                    seen = processed
+                    callbackCount++
+                }
             }
 
             assertEquals(payload.size.toLong(), seen)

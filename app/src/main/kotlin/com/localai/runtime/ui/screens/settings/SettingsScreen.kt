@@ -384,41 +384,40 @@ fun SettingsScreen(container: AppContainer, navController: NavHostController) {
 
             Spacer(Modifier.height(8.dp))
         }
-    }
 
-    newToken?.let { token ->
-        AlertDialog(
-            onDismissRequest = vm::onTokenShown,
-            title = { Text("API token") },
-            text = {
-                Column {
-                    Text(
-                        "Copy this token now — it is shown only once.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Text(
-                        token,
-                        fontFamily = FontFamily.Monospace,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(top = 12.dp),
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        clipboard.setText(AnnotatedString(token))
-                        Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
-                        vm.onTokenShown()
-                    },
-                ) { Text("Copy") }
-            },
-            dismissButton = {
-                TextButton(onClick = vm::onTokenShown) { Text("Done") }
-            },
-        )
+        newToken?.let { token ->
+            AlertDialog(
+                onDismissRequest = vm::onTokenShown,
+                title = { Text("API token") },
+                text = {
+                    Column {
+                        Text(
+                            "Copy this token now — it is shown only once.",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            token,
+                            fontFamily = FontFamily.Monospace,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = 12.dp),
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            clipboard.setText(AnnotatedString(token))
+                            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                            vm.onTokenShown()
+                        },
+                    ) { Text("Copy") }
+                },
+                dismissButton = {
+                    TextButton(onClick = vm::onTokenShown) { Text("Done") }
+                },
+            )
+        }
     }
-}
 
 @Composable
 private fun ChoiceChip(label: String, selected: Boolean, onClick: () -> Unit) {
