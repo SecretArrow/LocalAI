@@ -57,7 +57,11 @@ jobs:
 
       - name: Compile Kotlin sources under CodeQL tracing
         run: |
-          ./gradlew --no-daemon --stacktrace \
+          # --rerun-tasks is required: with a warm Gradle build cache the
+          # compile tasks would be UP-TO-DATE, no compiler process runs,
+          # and CodeQL's tracing extracts nothing ("this run didn't build
+          # any of it").
+          ./gradlew --no-daemon --stacktrace --rerun-tasks \
             :app:compileDebugKotlin \
             :core:compileDebugKotlin \
             :api-server:compileKotlin
