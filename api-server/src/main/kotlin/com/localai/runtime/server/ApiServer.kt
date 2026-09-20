@@ -4,6 +4,7 @@ import com.localai.runtime.server.api.AuthStore
 import com.localai.runtime.server.api.EngineException
 import com.localai.runtime.server.api.InferenceEngine
 import com.localai.runtime.server.api.ModelRegistry
+import com.localai.runtime.server.api.ServerEndpoint
 import com.localai.runtime.server.api.ServerEnv
 import com.localai.runtime.server.api.ServerLogEntry
 import com.localai.runtime.server.api.ServerLogSink

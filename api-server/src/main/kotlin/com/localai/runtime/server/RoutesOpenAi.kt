@@ -11,7 +11,6 @@ import io.ktor.server.application.*
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.utils.io.WriterScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.Serializable
@@ -440,10 +439,9 @@ internal fun Application.openAiRoutes(
 }
 
 /** Writes one SSE frame: `data: <payload>\n\n`, flushed immediately. */
-private suspend fun WriterScope.writeSseData(payload: String) {
-    val bytes = ("data: " + payload + "\n\n").toByteArray(Charsets.UTF_8)
-    channel.writeFully(bytes, 0, bytes.size)
-    channel.flush()
+private suspend fun java.io.Writer.writeSseData(payload: String) {
+    write("data: $payload\n\n")
+    flush()
 }
 
 /** Rough prompt-token estimate (spec: message length / 4). */

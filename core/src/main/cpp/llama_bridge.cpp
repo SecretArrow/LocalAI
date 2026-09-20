@@ -84,7 +84,8 @@ llama_sampler *buildSampler(const SamplerSpec &spec, int32_t contextTokens) {
     llama_sampler *chain = llama_sampler_chain_init(llama_sampler_chain_default_params());
     const int32_t penaltyLastN = spec.repeatPenalty > 1.0f ? std::min<int32_t>(64, std::max<int32_t>(16, contextTokens / 4)) : 0;
     if (penaltyLastN > 0) {
-        llama_sampler_chain_add(chain, llama_sampler_init_penalties(penaltyLastN, 0.0f, spec.repeatPenalty, 0.0f, 0.0f));
+        // b4755 signature: (penalty_last_n, penalty_repeat, penalty_freq, penalty_present)
+        llama_sampler_chain_add(chain, llama_sampler_init_penalties(penaltyLastN, spec.repeatPenalty, 0.0f, 0.0f));
     }
     if (spec.topK > 0) {
         llama_sampler_chain_add(chain, llama_sampler_init_top_k(spec.topK));

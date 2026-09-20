@@ -5,6 +5,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.plugins.origin.origin
 import io.ktor.server.request.path
+import io.ktor.server.response.header
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 
