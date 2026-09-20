@@ -109,7 +109,7 @@ class LogsViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     private fun buildExportText(): String = buildString {
-        appendLine("LocalAI Runtime — log export")
+        appendLine("LocalAI — log export")
         appendLine()
         appendLine("=== App logs ===")
         latestAppLogs.forEach {

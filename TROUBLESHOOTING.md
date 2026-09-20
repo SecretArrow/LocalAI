@@ -50,9 +50,9 @@ binary rather than running the app, see [BUILD.md](BUILD.md) first.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Runtime/service stops when screen turns off or app is backgrounded | OEM battery optimization killed the app | Disable battery optimization for LocalAI Runtime (Settings → Apps → Battery); on Xiaomi/Huawei/Samsung also enable "Unrestricted" background activity in the vendor's power manager |
+| Runtime/service stops when screen turns off or app is backgrounded | OEM battery optimization killed the app | Disable battery optimization for LocalAI (Settings → Apps → Battery); on Xiaomi/Huawei/Samsung also enable "Unrestricted" background activity in the vendor's power manager |
 | Model keeps running but downloads stall in background | Doze restricts network for background work | Keep the foreground notification active; WorkManager resumes downloads on the next window; check Downloads screen after |
-| Notification "LocalAI Runtime" disappears after a while | The service stopped itself (no model running and server stopped) — or the OS killed it | Expected in the first case; in the second, apply the battery optimization fix above |
+| Notification "LocalAI" disappears after a while | The service stopped itself (no model running and server stopped) — or the OS killed it | Expected in the first case; in the second, apply the battery optimization fix above |
 | Auto-start on boot does nothing | `startOnBoot` off, or OEM blocks boot receivers of non-started apps | Enable Start on boot in Settings (Background); on restrictive OEMs also allow auto-start in the vendor settings; Android may still defer it |
 
 ## Native library load failure

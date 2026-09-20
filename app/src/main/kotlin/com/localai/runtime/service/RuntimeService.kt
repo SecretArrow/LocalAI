@@ -242,9 +242,9 @@ class RuntimeService : Service() {
 
     private fun buildNotification(s: Snapshot): Notification {
         val title = if (s.runningNames.isEmpty()) {
-            "LocalAI Runtime — Idle"
+            "LocalAI — Idle"
         } else {
-            "LocalAI Runtime — ${s.runningNames.joinToString(", ")}"
+            "LocalAI — ${s.runningNames.joinToString(", ")}"
         }
         val summary = buildString {
             append(if (s.apiRunning) "API server: Running" else "API server: Off")

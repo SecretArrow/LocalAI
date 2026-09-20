@@ -21,6 +21,12 @@ updates:
         update-types:
           - minor
           - patch
+    # No breaking major bumps (the agp 9 / ktor 3 / okhttp 5 / compose-bom
+    # 2026 class of updates) — majors are upgraded deliberately, by hand.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
 
   # GitHub Actions workflow versions (actions/checkout, setup-java, ...).
   - package-ecosystem: github-actions

@@ -1,6 +1,6 @@
 # Model Formats
 
-Which model file formats LocalAI Runtime can actually run, which it can merely detect, and how
+Which model file formats LocalAI can actually run, which it can merely detect, and how
 imports work. The guiding rule: **run what is real, detect what is detectable, and never pretend
 a format is executable when no runtime for it is bundled.**
 

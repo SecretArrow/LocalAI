@@ -62,7 +62,7 @@ fun AboutScreen(container: AppContainer, navController: NavHostController) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SectionCard(title = null) {
-                Text("LocalAI Runtime", style = MaterialTheme.typography.titleLarge)
+                Text("LocalAI", style = MaterialTheme.typography.titleLarge)
                 Text(
                     "Run large language models entirely on your device — chat locally, " +
                         "and expose an OpenAI-compatible API on your own network.",

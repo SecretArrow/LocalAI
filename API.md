@@ -1,6 +1,6 @@
 # API Reference
 
-LocalAI Runtime serves a local HTTP API with two surfaces:
+LocalAI serves a local HTTP API with two surfaces:
 
 - **OpenAI-compatible** routes under `/v1` — drop-in for OpenAI SDKs and existing tools.
 - **Native** management routes under `/api` — model lifecycle, runtime info, and logs.
@@ -609,7 +609,7 @@ client.newCall(request).execute().use { response ->
 ```
 
 Note for Android clients: plain-HTTP LAN URLs require the **client app** to allow cleartext
-traffic for that host (its own `network_security_config.xml`); LocalAI Runtime's server config
+traffic for that host (its own `network_security_config.xml`); LocalAI's server config
 does not change your client app's policy. Browsers, curl, and desktop tools are unaffected.
 
 ## SSE client notes

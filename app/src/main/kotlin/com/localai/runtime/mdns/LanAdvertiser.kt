@@ -71,6 +71,6 @@ class LanAdvertiser(private val context: Context) {
 
     private companion object {
         const val SERVICE_TYPE = "_localai._tcp."
-        const val DEFAULT_NAME = "LocalAI Runtime"
+        const val DEFAULT_NAME = "LocalAI"
     }
 }

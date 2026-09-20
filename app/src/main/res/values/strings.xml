@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">LocalAI Runtime</string>
-    <string name="notification_channel_runtime">Local AI Runtime</string>
+    <string name="app_name">LocalAI</string>
+    <string name="notification_channel_runtime">LocalAI</string>
     <string name="notification_channel_runtime_desc">Shows the state of running models and the API server</string>
     <string name="notification_channel_downloads">Downloads</string>
     <string name="notification_channel_downloads_desc">Shows model download progress</string>

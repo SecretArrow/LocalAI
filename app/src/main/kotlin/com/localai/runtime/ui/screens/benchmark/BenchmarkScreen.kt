@@ -196,7 +196,7 @@ private fun ModelDropdown(
 }
 
 private fun buildShareText(result: BenchmarkResult): String = buildString {
-    appendLine("LocalAI Runtime benchmark")
+    appendLine("LocalAI benchmark")
     appendLine("Model: ${result.modelId}")
     appendLine("Backend: ${result.backend}")
     appendLine("Prompt processing: ${"%.1f".format(result.promptTokensPerSecond)} tokens/s")

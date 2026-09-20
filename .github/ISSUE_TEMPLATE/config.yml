@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and answers
+    url: https://github.com/SecretArrow/LocalAI/discussions
+    about: Ask questions and get help in GitHub Discussions (Q&A) instead of opening an issue.

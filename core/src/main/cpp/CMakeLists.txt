@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22.1)
 project(localai_runtime LANGUAGES C CXX)
 
 # ---------------------------------------------------------------------------
-# LocalAI Runtime native inference bridge.
+# LocalAI native inference bridge.
 # Fetches a pinned llama.cpp release (see LLAMA_TAG passed from Gradle) and
 # builds a thin JNI shared library used by LlamaCpuBackend.
 # ---------------------------------------------------------------------------

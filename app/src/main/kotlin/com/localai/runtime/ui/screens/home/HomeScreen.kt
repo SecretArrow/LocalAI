@@ -69,7 +69,7 @@ fun HomeScreen(container: AppContainer, navController: NavHostController) {
     ) {
         // ---------- Header ----------
         Column {
-            Text("LocalAI Runtime", style = MaterialTheme.typography.headlineSmall)
+            Text("LocalAI", style = MaterialTheme.typography.headlineSmall)
             Text(
                 "v${BuildConfig.VERSION_NAME} · on-device inference",
                 style = MaterialTheme.typography.labelMedium,

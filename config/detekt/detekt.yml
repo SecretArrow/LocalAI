@@ -1,4 +1,4 @@
-# detekt configuration — LocalAI Runtime
+# detekt configuration — LocalAI
 #
 # DERIVED FROM detekt's default-detekt-config.yml (v1.23.8) with the
 # project-specific relaxations listed below. Do not add bare ruleset-level

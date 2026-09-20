@@ -1,13 +1,15 @@
-# LocalAI Runtime
+# LocalAI
 
 Turn an Android phone into a **self-contained local AI server**.
 
-LocalAI Runtime is a production-grade Android application that downloads, imports and manages GGUF
+LocalAI is a production-grade Android application that downloads, imports and manages GGUF
 language models, runs them entirely on-device via llama.cpp, and exposes them over an
 OpenAI-compatible HTTP/HTTPS API. Other apps on the phone, PCs, and browsers on your LAN can use
 the running model — no cloud, no account, no data leaving the device.
 
 [![CI](https://github.com/SecretArrow/LocalAI/actions/workflows/ci.yml/badge.svg)](https://github.com/SecretArrow/LocalAI/actions/workflows/ci.yml)
+[![Quality](https://github.com/SecretArrow/LocalAI/actions/workflows/quality.yml/badge.svg)](https://github.com/SecretArrow/LocalAI/actions/workflows/quality.yml)
+[![CodeQL](https://github.com/SecretArrow/LocalAI/actions/workflows/codeql.yml/badge.svg)](https://github.com/SecretArrow/LocalAI/actions/workflows/codeql.yml)
 [![Release](https://github.com/SecretArrow/LocalAI/actions/workflows/release.yml/badge.svg)](https://github.com/SecretArrow/LocalAI/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.0-7F52FF)](https://kotlinlang.org)
@@ -17,7 +19,7 @@ the running model — no cloud, no account, no data leaving the device.
                     ┌─────────────────────┐
                     │   Android Device    │
                     │                     │
-                    │  LocalAI Runtime    │
+                    │  LocalAI            │
                     │                     │
                     │  Model Manager      │
                     │  Runtime Engine     │
@@ -106,7 +108,7 @@ the running model — no cloud, no account, no data leaving the device.
 
 ## Current backend support
 
-LocalAI Runtime reports backend availability honestly. Accelerators other than CPU are **detected
+LocalAI reports backend availability honestly. Accelerators other than CPU are **detected
 and displayed** but are **not integrated execution backends** in this build — the UI marks them as
 unavailable and explains why. Nothing is faked.
 

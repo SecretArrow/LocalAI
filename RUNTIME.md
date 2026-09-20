@@ -1,6 +1,6 @@
 # Runtime Architecture
 
-How LocalAI Runtime executes models on Android: the backend abstraction, the real CPU backend,
+How LocalAI executes models on Android: the backend abstraction, the real CPU backend,
 memory protection, crash supervision, benchmarking, and the extension path for new backends.
 
 ## Backend abstraction

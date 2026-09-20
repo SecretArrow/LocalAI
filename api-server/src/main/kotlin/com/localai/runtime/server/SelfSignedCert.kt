@@ -30,7 +30,7 @@ import java.util.Date
  * - [ensureProvider] registers BC as the preferred security provider (safe to call repeatedly;
  *   called from the app process before any TLS/cert operation, e.g. from `ApiServer.generateSelfSignedCert`).
  * - [generate] creates a fresh RSA-2048 self-signed certificate valid for 3650 days
- *   (CN=LocalAI Runtime, SANs: DNS `localhost` + IP `127.0.0.1`).
+ *   (CN=LocalAI, SANs: DNS `localhost` + IP `127.0.0.1`).
  * - [buildKeyStore] turns an imported PEM pair into the in-memory PKCS12 key store used by the
  *   Ktor SSL connector.
  */
@@ -65,7 +65,7 @@ class SelfSignedCert private constructor() {
             val now = System.currentTimeMillis()
             val notBefore = Date(now - 24L * 60L * 60L * 1000L)
             val notAfter = Date(now + VALIDITY_DAYS * 24L * 60L * 60L * 1000L)
-            val subject = X500Name("CN=LocalAI Runtime")
+            val subject = X500Name("CN=LocalAI")
 
             val builder = JcaX509v3CertificateBuilder(
                 subject,

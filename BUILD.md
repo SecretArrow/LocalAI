@@ -1,6 +1,6 @@
 # Build Guide
 
-How to produce LocalAI Runtime binaries. The short version: **you do not need a local Android
+How to produce LocalAI binaries. The short version: **you do not need a local Android
 toolchain** — GitHub Actions builds, tests, signs, and releases everything. Local builds are
 optional and described second.
 

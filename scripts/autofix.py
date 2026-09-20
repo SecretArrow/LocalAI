@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-LocalAI Runtime — CI auto-fixer.
+LocalAI — CI auto-fixer.
 
 Parses CI failure diagnostics, applies deterministic fixes for known failure
 classes, optionally applies LLM-assisted fixes (OpenAI-compatible API when a

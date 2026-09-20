@@ -1,4 +1,4 @@
-# LocalAI Runtime — Architecture Contracts
+# LocalAI — Architecture Contracts
 
 **READ THIS FILE COMPLETELY BEFORE WRITING ANY CODE.**
 All public signatures below are FROZEN. Other agents implement against them. Do not rename, do not change parameter lists, do not move classes to other packages. If something is genuinely missing, implement it as a private helper in your own file.
@@ -357,7 +357,7 @@ class AppContainer(val context: Context) {
 ```kotlin
 class RuntimeService : android.app.Service      // specialUse FGS. Started via startForegroundService from UI or BootReceiver.
 // Notification channel "runtime" (string res notification_channel_runtime).
-// Persistent notification: "LocalAI Runtime — <model names or Idle>", API server state, requests + tokens/sec when available,
+// Persistent notification: "LocalAI — <model names or Idle>", API server state, requests + tokens/sec when available,
 // actions: Open (MainActivity) + Stop (ACTION_STOP handled in onStartCommand). onStartCommand also handles ACTION_START_MODEL(modelId) / ACTION_STOP_MODEL(modelId).
 // Binds the coordinator from (application as LocalAiApplication).container; observes stats to update notification at most every 2s.
 // Stops itself (stopForeground+stopSelf) when no model running AND api server stopped.
@@ -399,7 +399,7 @@ data class PairingSession(val code: String, val expiresAtMs: Long) { fun isExpir
 
 ```kotlin
 class LanAdvertiser(private val context: android.content.Context) {
-    fun start(port: Int, name: String = "LocalAI Runtime")   // NsdManager registerService "_localai._tcp.", try-catch no-op on failure
+    fun start(port: Int, name: String = "LocalAI")   // NsdManager registerService "_localai._tcp.", try-catch no-op on failure
     fun stop()
     val isRunning: Boolean
 }

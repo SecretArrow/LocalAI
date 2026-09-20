@@ -1,6 +1,6 @@
 # Security
 
-How LocalAI Runtime protects the model server, its credentials, and your data. The design goal:
+How LocalAI protects the model server, its credentials, and your data. The design goal:
 safe defaults with convenience as an explicit, warned, opt-in.
 
 ## Threat model (summary)

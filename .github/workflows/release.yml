@@ -214,13 +214,13 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.ver.outputs.version }}
-          name: LocalAI Runtime v${{ steps.ver.outputs.version }}
+          name: LocalAI v${{ steps.ver.outputs.version }}
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: |
             dist/*
           body: |
-            LocalAI Runtime v${{ steps.ver.outputs.version }}
+            LocalAI v${{ steps.ver.outputs.version }}
 
             Signed with: ${{ env.signing }}
 
