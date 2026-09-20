@@ -5,7 +5,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
-import io.ktor.server.plugins.origin.origin
+import io.ktor.server.plugins.origin
 import io.ktor.server.request.*
 import io.ktor.server.response.header
 
