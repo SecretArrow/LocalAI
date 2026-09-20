@@ -1,8 +1,10 @@
 // Top-level build file where you should add configuration options common to all sub-projects/modules.
 
-// AGP 9 built-in Kotlin: KGP/KSP versions are pinned on the buildscript
-// classpath (AGP 9 has a runtime dependency on KGP and upgrades to whatever
-// highest classpath version is declared). See kotl.in/gradle/agp-built-in-kotlin
+// KGP/KSP versions are also pinned on the buildscript classpath (AGP 9 has a
+// runtime dependency on KGP and upgrades to the highest declared classpath
+// version). The project opts out of AGP 9 built-in Kotlin via
+// android.builtInKotlin=false and applies the classic kotlin-android plugin
+// (see gradle.properties for the rationale).
 buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${libs.versions.kotlin.get()}")
