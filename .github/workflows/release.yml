@@ -160,6 +160,23 @@ jobs:
             --stacktrace --parallel --build-cache \
             -PbuildNumber="${{ github.run_number }}" 2>&1 | tee release-build.log
 
+      - name: Collect failure diagnostics
+        if: failure()
+        run: |
+          mkdir -p release-failure
+          cp release-build.log release-failure/ 2>/dev/null || true
+          if [ -f app/build/outputs/mapping/release/missing_rules.txt ]; then
+            cp app/build/outputs/mapping/release/missing_rules.txt release-failure/ 2>/dev/null || true
+          fi
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-logs
+          path: release-failure/
+          retention-days: 14
+
       - name: Stage artifacts + checksums
         run: |
           mkdir -p dist

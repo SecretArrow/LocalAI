@@ -28,3 +28,11 @@
 
 # JNI bridge
 -keepclasseswithmembernames class com.localai.runtime.core.** { native <methods>; }
+
+# Ktor references JMX classes for its IntelliJ debug detector; they do not
+# exist on Android and are never used at runtime.
+-dontwarn java.lang.management.**
+-dontwarn io.ktor.util.debug.**
+
+# Coroutines debug agent is JVM-only.
+-dontwarn kotlinx.coroutines.debug.**
