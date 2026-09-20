@@ -129,7 +129,7 @@ jobs:
         run: sudo apt-get install -y -qq ccache
 
       - name: Cache ccache (native compilation)
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ccache
           key: ccache-${{ runner.os }}-${{ github.sha }}
@@ -137,7 +137,7 @@ jobs:
             ccache-${{ runner.os }}-
 
       - name: Cache llama.cpp source (${{ env.LLAMA_TAG }})
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/llama-src
           key: llama-src-${{ env.LLAMA_TAG }}
