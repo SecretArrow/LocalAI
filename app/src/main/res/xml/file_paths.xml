@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <cache-path name="shared" path="shared/" />
+    <files-path name="exports" path="exports/" />
+    <files-path name="logs" path="logs/" />
+</paths>

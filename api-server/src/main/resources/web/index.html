@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LocalAI Runtime Console</title>
+<style>
+:root{--bg:#0f1412;--panel:#151c19;--panel2:#1b2420;--line:#243029;--text:#d9e6e0;--muted:#84988f;--accent:#52ddd0;--danger:#e2695e;--warn:#d9a352;--ok:#6fbf8a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+#banner{display:none;background:#5a2723;color:#ffd9d4;padding:8px 16px;text-align:center;font-weight:600}
+#banner.show{display:block}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:16px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.spacer{flex:1}
+#token-input{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:6px 10px;width:190px;font-size:12px}
+nav{display:flex;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{background:none;border:none;color:var(--muted);padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent)}
+main{flex:1;overflow:auto;padding:16px;max-width:960px;width:100%;margin:0 auto}
+section{display:none}
+section.active{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+h2{font-size:14px;color:var(--accent);margin-bottom:4px}
+.muted{color:var(--muted);font-size:12px}
+input,select,textarea{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:8px 10px;font:inherit}
+input{flex:1;min-width:0}
+button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:default}
+button.primary{background:var(--accent);border-color:var(--accent);color:#0a1512}
+table.list{width:100%;border-collapse:collapse;font-size:13px}
+table.list th,table.list td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.list th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+td.ok{color:var(--ok)}
+td.warn{color:var(--warn)}
+td.danger{color:var(--danger)}
+#chat-messages{flex:1;min-height:280px;max-height:50vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.bubble{max-width:82%;padding:8px 12px;border-radius:10px;white-space:pre-wrap;word-wrap:break-word}
+.bubble.user{align-self:flex-end;background:#1d2a33;border-bottom-right-radius:2px}
+.bubble.assistant{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:2px}
+#chat-messages:empty::after{content:"Pick a model, type a message and press Send.";color:var(--muted);align-self:center;margin:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px}
+.card-label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.card-value{font-size:20px;font-weight:700;color:var(--accent);word-break:break-word}
+pre.code{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#b8d8d1;white-space:pre-wrap;word-break:break-all}
+.state-chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+.state-running{background:#1d3a2a;color:var(--ok)}
+.state-stopped{background:#3a2f1d;color:var(--warn)}
+</style>
+</head>
+<body>
+<div id="banner">Server unreachable &mdash; check the connection and retry</div>
+<header>
+  <h1>LocalAI Runtime</h1>
+  <div class="spacer"></div>
+  <input id="token-input" type="password" placeholder="API token (optional)" autocomplete="off">
+</header>
+<nav>
+  <button data-tab="chat" class="active">Chat</button>
+  <button data-tab="models">Models</button>
+  <button data-tab="api">API</button>
+  <button data-tab="logs">Logs</button>
+  <button data-tab="metrics">Metrics</button>
+</nav>
+<main>
+  <section id="tab-chat" class="active">
+    <div class="row">
+      <select id="chat-model"><option value="">Loading models&hellip;</option></select>
+      <button id="chat-new">New chat</button>
+    </div>
+    <input id="chat-system" type="text" placeholder="System prompt (optional)">
+    <div id="chat-messages"></div>
+    <div class="row">
+      <input id="chat-input" type="text" placeholder="Message&hellip; (Enter to send)">
+      <button id="chat-send" class="primary">Send</button>
+      <button id="chat-stop" disabled>Stop</button>
+    </div>
+  </section>
+
+  <section id="tab-models">
+    <h2>Installed models</h2>
+    <table class="list" id="models-table">
+      <thead><tr><th>Name</th><th>Format</th><th>State</th><th>Backend</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="tab-api">
+    <h2>API endpoints</h2>
+    <div id="api-endpoints"></div>
+    <h2>curl examples</h2>
+    <pre class="code" id="api-curl"></pre>
+    <p class="muted">Requests need an Authorization header when token auth is enabled. Paste your token in the field at the top right (stored only in this browser).</p>
+  </section>
+
+  <section id="tab-logs">
+    <div class="row">
+      <h2>Request log</h2>
+      <div class="spacer"></div>
+      <button id="logs-clear">Clear view</button>
+    </div>
+    <table class="list" id="logs-table">
+      <thead><tr><th>Time</th><th>Method</th><th>Path</th><th>Status</th><th>Latency</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="tab-metrics">
+    <h2>Server metrics</h2>
+    <div class="cards" id="metrics-cards"></div>
+  </section>
+</main>
+<script>
+(function () {
+  "use strict";
+
+  var token = "";
+  try { token = localStorage.getItem("localai_token") || ""; } catch (e) { token = ""; }
+  var banner = document.getElementById("banner");
+  var tokenInput = document.getElementById("token-input");
+  tokenInput.value = token;
+  tokenInput.addEventListener("change", function () {
+    token = tokenInput.value.trim();
+    try { localStorage.setItem("localai_token", token); } catch (e) {}
+  });
+
+  function hideBanner() { banner.className = ""; }
+  function showBanner() { banner.className = "show"; }
+
+  function authHeaders(extra) {
+    var h = extra || {};
+    if (token) h["Authorization"] = "Bearer " + token;
+    return h;
+  }
+
+  function apiFetch(method, path, bodyObj) {
+    var headers = authHeaders(bodyObj ? { "Content-Type": "application/json" } : {});
+    var opts = { method: method, headers: headers };
+    if (bodyObj) opts.body = JSON.stringify(bodyObj);
+    return fetch(path, opts).then(function (res) {
+      hideBanner();
+      return res.text().then(function (text) {
+        var data = null;
+        if (text) { try { data = JSON.parse(text); } catch (e) { data = null; } }
+        return { status: res.status, ok: res.ok, data: data };
+      });
+    }, function () {
+      showBanner();
+      return null;
+    });
+  }
+
+  // ---- tabs ----
+  var currentTab = "chat";
+  var tabButtons = document.querySelectorAll("nav button");
+  for (var i = 0; i < tabButtons.length; i++) {
+    tabButtons[i].addEventListener("click", makeTabSwitch(tabButtons[i]));
+  }
+  function makeTabSwitch(btn) {
+    return function () {
+      for (var j = 0; j < tabButtons.length; j++) tabButtons[j].className = "";
+      btn.className = "active";
+      currentTab = btn.getAttribute("data-tab");
+      var sections = document.querySelectorAll("main section");
+      for (var k = 0; k < sections.length; k++) {
+        sections[k].className = sections[k].id === "tab-" + currentTab ? "active" : "";
+      }
+      if (currentTab === "models") refreshModels();
+      if (currentTab === "logs") refreshLogs();
+      if (currentTab === "metrics") refreshStatus();
+      if (currentTab === "api") renderApi();
+    };
+  }
+
+  // ---- chat ----
+  var chatHistory = [];
+  var chatAbort = null;
+  var chatModelSel = document.getElementById("chat-model");
+  var chatMessages = document.getElementById("chat-messages");
+  var chatInput = document.getElementById("chat-input");
+  var chatSend = document.getElementById("chat-send");
+  var chatStop = document.getElementById("chat-stop");
+
+  function loadChatModels() {
+    return apiFetch("GET", "/v1/models").then(function (r) {
+      if (!r || !r.ok || !r.data || !r.data.data) return;
+      var prev = chatModelSel.value;
+      while (chatModelSel.options.length) chatModelSel.remove(0);
+      for (var i = 0; i < r.data.data.length; i++) {
+        var opt = document.createElement("option");
+        opt.value = r.data.data[i].id;
+        opt.textContent = r.data.data[i].id;
+        chatModelSel.appendChild(opt);
+      }
+      if (prev) chatModelSel.value = prev;
+      if (!chatModelSel.value && chatModelSel.options.length) chatModelSel.value = chatModelSel.options[0].value;
+      if (!chatModelSel.options.length) {
+        var empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = "No models installed";
+        chatModelSel.appendChild(empty);
+      }
+    });
+  }
+
+  function addBubble(role, text) {
+    var div = document.createElement("div");
+    div.className = "bubble " + role;
+    div.textContent = text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return div;
+  }
+
+  function setStreaming(on) {
+    chatSend.disabled = on;
+    chatStop.disabled = !on;
+  }
+
+  function handleFrame(frame, onDelta) {
+    var lines = frame.split("\n");
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (line.indexOf("data:") !== 0) continue;
+      var payload = line.substring(5).trim();
+      if (!payload || payload === "[DONE]") continue;
+      var obj = null;
+      try { obj = JSON.parse(payload); } catch (e) { obj = null; }
+      if (!obj) continue;
+      var ch = obj.choices && obj.choices[0];
+      if (ch && ch.delta && typeof ch.delta.content === "string" && ch.delta.content) onDelta(ch.delta.content);
+    }
+  }
+
+  function sendChat() {
+    var model = chatModelSel.value;
+    var system = document.getElementById("chat-system").value.trim();
+    var text = chatInput.value.trim();
+    if (!model || !text || chatAbort) return;
+    chatInput.value = "";
+    addBubble("user", text);
+    var assistant = addBubble("assistant", "");
+    var acc = "";
+    var ctrl = new AbortController();
+    chatAbort = ctrl;
+    setStreaming(true);
+
+    var msgs = [];
+    if (system) msgs.push({ role: "system", content: system });
+    for (var i = 0; i < chatHistory.length; i++) msgs.push(chatHistory[i]);
+    msgs.push({ role: "user", content: text });
+
+    fetch("/v1/chat/completions", {
+      method: "POST",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ model: model, stream: true, messages: msgs }),
+      signal: ctrl.signal
+    }).then(function (res) {
+      hideBanner();
+      if (!res.ok || !res.body) {
+        return res.text().then(function (t) {
+          var msg = "Request failed (HTTP " + res.status + ")";
+          try { var j = JSON.parse(t); if (j && j.error && j.error.message) msg = j.error.message; } catch (e) {}
+          throw new Error(msg);
+        });
+      }
+      var reader = res.body.getReader();
+      var decoder = new TextDecoder();
+      var buffer = "";
+      function pump() {
+        return reader.read().then(function (chunk) {
+          if (chunk.done) return;
+          buffer += decoder.decode(chunk.value, { stream: true });
+          var idx;
+          while ((idx = buffer.indexOf("\n\n")) !== -1) {
+            var frame = buffer.substring(0, idx);
+            buffer = buffer.substring(idx + 2);
+            handleFrame(frame, function (delta) {
+              acc += delta;
+              assistant.textContent = acc;
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+          }
+          return pump();
+        });
+      }
+      return pump();
+    }).catch(function (err) {
+      if (err && err.name === "AbortError") return;
+      if (err && err.name === "TypeError") { showBanner(); return; }
+      assistant.textContent = acc ? acc : ("Error: " + (err && err.message ? err.message : "request failed"));
+    }).then(function () {
+      if (acc) {
+        chatHistory.push({ role: "user", content: text });
+        chatHistory.push({ role: "assistant", content: acc });
+      }
+      chatAbort = null;
+      setStreaming(false);
+    });
+  }
+
+  chatSend.addEventListener("click", sendChat);
+  chatInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") sendChat();
+  });
+  chatStop.addEventListener("click", function () {
+    if (chatAbort) chatAbort.abort();
+  });
+  document.getElementById("chat-new").addEventListener("click", function () {
+    chatHistory = [];
+    chatMessages.innerHTML = "";
+  });
+
+  // ---- models ----
+  function makeModelAction(id, action) {
+    return function () {
+      apiFetch("POST", "/api/models/" + encodeURIComponent(id) + "/" + action).then(function (r) {
+        if (r && !r.ok && r.data && r.data.error && r.data.error.message) {
+          alert(action + " failed: " + r.data.error.message);
+        }
+        refreshModels();
+      });
+    };
+  }
+
+  function refreshModels() {
+    return apiFetch("GET", "/api/models").then(function (r) {
+      if (!r || !r.ok || !r.data || !r.data.models) return;
+      var tbody = document.querySelector("#models-table tbody");
+      tbody.innerHTML = "";
+      for (var i = 0; i < r.data.models.length; i++) {
+        var m = r.data.models[i];
+        var tr = document.createElement("tr");
+        appendTextCell(tr, m.name + " (" + m.id + ")");
+        appendTextCell(tr, m.format || "-");
+        var stateTd = appendTextCell(tr, m.state || "-");
+        stateTd.className = "state-chip " + (m.state === "running" ? "state-running" : "state-stopped");
+        appendTextCell(tr, m.backend || "-");
+        var td = document.createElement("td");
+        var btn = document.createElement("button");
+        if (m.state === "running") {
+          btn.textContent = "Stop";
+          btn.addEventListener("click", makeModelAction(m.id, "stop"));
+        } else {
+          btn.textContent = "Start";
+          btn.addEventListener("click", makeModelAction(m.id, "start"));
+        }
+        td.appendChild(btn);
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+    });
+  }
+
+  function appendTextCell(tr, text) {
+    var td = document.createElement("td");
+    td.textContent = text;
+    tr.appendChild(td);
+    return td;
+  }
+
+  // ---- logs ----
+  var logsClearedBefore = 0;
+
+  function statusClass(status) {
+    if (status >= 200 && status < 300) return "ok";
+    if (status >= 400 && status < 500) return "warn";
+    if (status >= 500) return "danger";
+    return "";
+  }
+
+  function formatTime(ts) {
+    var d = new Date(ts);
+    function p2(n) { return (n < 10 ? "0" : "") + n; }
+    return p2(d.getHours()) + ":" + p2(d.getMinutes()) + ":" + p2(d.getSeconds());
+  }
+
+  function refreshLogs() {
+    return apiFetch("GET", "/api/logs?limit=100").then(function (r) {
+      if (!r || !r.ok || !r.data || !r.data.logs) return;
+      var tbody = document.querySelector("#logs-table tbody");
+      tbody.innerHTML = "";
+      for (var i = r.data.logs.length - 1; i >= 0; i--) {
+        var e = r.data.logs[i];
+        if (e.ts <= logsClearedBefore) continue;
+        var tr = document.createElement("tr");
+        appendTextCell(tr, formatTime(e.ts));
+        appendTextCell(tr, e.method);
+        appendTextCell(tr, e.path);
+        var s = appendTextCell(tr, String(e.status));
+        s.className = statusClass(e.status);
+        appendTextCell(tr, e.latencyMs + " ms");
+        tbody.appendChild(tr);
+      }
+    });
+  }
+
+  document.getElementById("logs-clear").addEventListener("click", function () {
+    logsClearedBefore = Date.now();
+    document.querySelector("#logs-table tbody").innerHTML = "";
+  });
+
+  // ---- metrics ----
+  function formatUptime(sec) {
+    sec = Math.max(0, Math.floor(sec || 0));
+    var d = Math.floor(sec / 86400);
+    var h = Math.floor((sec % 86400) / 3600);
+    var m = Math.floor((sec % 3600) / 60);
+    var s = sec % 60;
+    var out = "";
+    if (d) out += d + "d ";
+    if (d || h) out += h + "h ";
+    out += m + "m " + s + "s";
+    return out;
+  }
+
+  function addCard(parent, label, value) {
+    var card = document.createElement("div");
+    card.className = "card";
+    var h = document.createElement("div");
+    h.className = "card-label";
+    h.textContent = label;
+    var v = document.createElement("div");
+    v.className = "card-value";
+    v.textContent = value;
+    card.appendChild(h);
+    card.appendChild(v);
+    parent.appendChild(card);
+  }
+
+  function refreshStatus() {
+    return apiFetch("GET", "/api/status").then(function (r) {
+      if (!r || !r.ok || !r.data) return;
+      var d = r.data;
+      var cards = document.getElementById("metrics-cards");
+      cards.innerHTML = "";
+      addCard(cards, "Uptime", formatUptime(d.uptime_seconds));
+      addCard(cards, "Requests", String(d.requests_total));
+      addCard(cards, "Tokens generated", String(d.tokens_generated));
+      addCard(cards, "Running models", d.models_running && d.models_running.length ? d.models_running.join(", ") : "none");
+      addCard(cards, "Port", String(d.port));
+      addCard(cards, "TLS", d.tls ? "enabled" : "disabled");
+    });
+  }
+
+  // ---- api tab ----
+  var ENDPOINTS = [
+    ["GET", "/api/health", "Liveness probe (no auth)"],
+    ["GET", "/api/status", "Server status and counters"],
+    ["GET", "/api/models", "Installed models"],
+    ["POST", "/api/models/{id}/start", "Start a model"],
+    ["POST", "/api/models/{id}/stop", "Stop a model"],
+    ["POST", "/api/models/{id}/restart", "Restart a model"],
+    ["GET", "/api/runtime", "Runtime stats snapshot"],
+    ["GET", "/api/backends", "Backend availability"],
+    ["GET", "/api/logs", "Recent request log"],
+    ["GET", "/v1/models", "OpenAI-compatible model list"],
+    ["POST", "/v1/chat/completions", "Chat completion (stream supported)"],
+    ["POST", "/v1/completions", "Legacy text completion"],
+    ["POST", "/v1/embeddings", "Not supported in this build (501)"]
+  ];
+
+  function renderApi() {
+    var origin = location.origin;
+    var box = document.getElementById("api-endpoints");
+    box.innerHTML = "";
+    var p = document.createElement("p");
+    p.className = "muted";
+    p.textContent = "Base URL: " + origin;
+    box.appendChild(p);
+    var table = document.createElement("table");
+    table.className = "list";
+    var thead = document.createElement("thead");
+    var htr = document.createElement("tr");
+    ["Method", "Path", "Description"].forEach(function (h) {
+      var th = document.createElement("th");
+      th.textContent = h;
+      htr.appendChild(th);
+    });
+    thead.appendChild(htr);
+    table.appendChild(thead);
+    var tbody = document.createElement("tbody");
+    for (var i = 0; i < ENDPOINTS.length; i++) {
+      var tr = document.createElement("tr");
+      appendTextCell(tr, ENDPOINTS[i][0]);
+      appendTextCell(tr, ENDPOINTS[i][1]);
+      appendTextCell(tr, ENDPOINTS[i][2]);
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    box.appendChild(table);
+
+    var curl = document.getElementById("api-curl");
+    curl.textContent =
+      "curl " + origin + "/v1/models -H \"Authorization: Bearer <token>\"\n\n" +
+      "curl " + origin + "/v1/chat/completions \\\n" +
+      "  -H \"Content-Type: application/json\" \\\n" +
+      "  -H \"Authorization: Bearer <token>\" \\\n" +
+      "  -d '{\"model\":\"MODEL_ID\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}]}'";
+  }
+
+  // ---- polling ----
+  setInterval(function () {
+    if (document.hidden) return;
+    if (currentTab === "models") refreshModels();
+  }, 5000);
+  setInterval(function () {
+    if (document.hidden) return;
+    if (currentTab === "logs") refreshLogs();
+    if (currentTab === "metrics") refreshStatus();
+  }, 3000);
+  setInterval(function () {
+    if (!document.hidden) loadChatModels();
+  }, 10000);
+
+  loadChatModels();
+  refreshStatus();
+})();
+</script>
+</body>
+</html>

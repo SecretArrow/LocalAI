@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Fast pipeline: cancel outdated runs of the same branch/PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  LLAMA_TAG: b4755
+
+jobs:
+  validate:
+    name: Validate (wrapper + secrets)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v3
+
+      - name: Secret scan (tokens must never be committed)
+        run: |
+          if git grep -nIE '(ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})' HEAD -- . ':!docs/CONTRACTS.md' 2>/dev/null; then
+            echo "::error::A GitHub token pattern was found in the repository. Remove it and rotate the token immediately."
+            exit 1
+          fi
+          echo "No secrets detected."
+
+  build:
+    name: Build + unit tests (arm64 + x86_64 native)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Ensure Android SDK pieces
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" > /dev/null
+
+      - name: Set up Gradle (build cache)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Install ccache
+        run: sudo apt-get install -y -qq ccache
+
+      - name: Cache ccache (native compilation)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
+      - name: Cache llama.cpp source (${{ env.LLAMA_TAG }})
+        uses: actions/cache@v4
+        with:
+          path: ~/llama-src
+          key: llama-src-${{ env.LLAMA_TAG }}
+
+      - name: Fetch llama.cpp source if missing
+        run: |
+          if [ ! -f "$HOME/llama-src/CMakeLists.txt" ]; then
+            mkdir -p "$HOME/llama-src" && cd "$HOME/llama-src"
+            curl -sSL "https://github.com/ggml-org/llama.cpp/archive/refs/tags/${LLAMA_TAG}.tar.gz" | tar xz --strip-components=1
+            echo "fetched fresh llama.cpp ${LLAMA_TAG}"
+          else
+            echo "using cached llama.cpp ${LLAMA_TAG}"
+          fi
+
+      - name: Build debug APK + run all unit tests
+        env:
+          FETCHCONTENT_SOURCE_DIR_LLAMA: /home/runner/llama-src
+          CCACHE_DIR: ~/.cache/ccache
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebug test --stacktrace --parallel --build-cache 2>&1 | tee ci-build.log
+
+      - name: Show ccache stats
+        if: always()
+        run: ccache --show-stats || true
+
+      - name: Upload debug APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: localai-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Collect failure diagnostics
+        if: failure()
+        run: |
+          mkdir -p ci-failure
+          cp ci-build.log ci-failure/ 2>/dev/null || true
+          find . -path '*/build/reports/*' \( -name '*.html' -o -name '*.xml' -o -name '*.txt' \) 2>/dev/null | head -80 | while read -r f; do
+            cp "$f" "ci-failure/$(echo "$f" | tr '/' '_')" 2>/dev/null || true
+          done
+          {
+            echo "commit: ${{ github.sha }}"
+            echo "run_id: ${{ github.run_id }}"
+            echo "branch: ${{ github.ref_name }}"
+          } > ci-failure/meta.txt
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-logs
+          path: ci-failure/
+          retention-days: 14

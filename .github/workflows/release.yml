@@ -1,0 +1,187 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (defaults to the VERSION file, e.g. 1.2.0)'
+        required: false
+        default: ''
+  workflow_run:
+    # Auto-release: when CI succeeds on main, tag automatically if the VERSION
+    # file was bumped. The new tag then triggers the release build below.
+    workflows: ['CI']
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  LLAMA_TAG: b4755
+
+jobs:
+  auto-tag:
+    name: Auto-tag on VERSION bump
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (full history for tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag when VERSION changed
+        run: |
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          if [ -z "$VERSION" ]; then echo "VERSION file is empty"; exit 0; fi
+          LATEST="$(git tag --list 'v*' --sort=-v:refname | head -n1 || true)"
+          if [ "v$VERSION" = "$LATEST" ]; then
+            echo "Version $LATEST already tagged — nothing to release."
+            exit 0
+          fi
+          echo "Bumping release: $LATEST -> v$VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+
+  release:
+    name: Build + publish release
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            INPUT="${{ github.event.inputs.version }}"
+            if [ -n "$INPUT" ]; then VERSION="${INPUT#v}"; else VERSION="$(tr -d '[:space:]' < VERSION)"; fi
+          fi
+          if [ -z "$VERSION" ]; then echo "No version resolved"; exit 1; fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing version $VERSION"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Ensure Android SDK pieces
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0" > /dev/null
+
+      - name: Set up Gradle (build cache)
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Install ccache
+        run: sudo apt-get install -y -qq ccache
+
+      - name: Cache ccache (native compilation)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
+      - name: Cache llama.cpp source (${{ env.LLAMA_TAG }})
+        uses: actions/cache@v4
+        with:
+          path: ~/llama-src
+          key: llama-src-${{ env.LLAMA_TAG }}
+
+      - name: Fetch llama.cpp source if missing
+        run: |
+          if [ ! -f "$HOME/llama-src/CMakeLists.txt" ]; then
+            mkdir -p "$HOME/llama-src" && cd "$HOME/llama-src"
+            curl -sSL "https://github.com/ggml-org/llama.cpp/archive/refs/tags/${LLAMA_TAG}.tar.gz" | tar xz --strip-components=1
+          fi
+
+      - name: Decode signing keystore (when configured)
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_B64" ]; then
+            echo "$ANDROID_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release-keystore.p12"
+            echo "signing=release" >> "$GITHUB_ENV"
+          else
+            echo "signing=debug-fallback" >> "$GITHUB_ENV"
+            echo "::notice::No signing secrets configured — the APK will be debug-signed (still installable for testing)."
+          fi
+
+      - name: Build release APK + AAB
+        env:
+          FETCHCONTENT_SOURCE_DIR_LLAMA: /home/runner/llama-src
+          CCACHE_DIR: ~/.cache/ccache
+          ANDROID_KEYSTORE_FILE: ${{ runner.temp }}/release-keystore.p12
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleRelease :app:bundleRelease \
+            --stacktrace --parallel --build-cache \
+            -PbuildNumber="${{ github.run_number }}" 2>&1 | tee release-build.log
+
+      - name: Stage artifacts + checksums
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/release/*.apk dist/ 2>/dev/null || true
+          cp app/build/outputs/bundle/release/*.aab dist/ 2>/dev/null || true
+          cd dist && sha256sum * > SHA256SUMS.txt && cd ..
+          ls -la dist/
+
+      - name: Ensure tag exists
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          if ! git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "v$VERSION"
+            git push origin "v$VERSION"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: LocalAI Runtime v${{ steps.ver.outputs.version }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/*
+          body: |
+            LocalAI Runtime v${{ steps.ver.outputs.version }}
+
+            Signed with: ${{ env.signing }}
+
+            **What's inside**
+            - Installable APK (arm64-v8a + x86_64, llama.cpp CPU runtime)
+            - Android App Bundle (AAB) for store distribution
+            - SHA256SUMS.txt — verify downloads before installing
+
+            See BUILD.md for how these artifacts are produced and API.md for the
+            OpenAI-compatible endpoints served by the app.

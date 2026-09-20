@@ -1,0 +1,68 @@
+name: Auto-fix
+
+# Self-healing pipeline: when CI fails on main, parse the failure logs,
+# apply deterministic fixes (and LLM-assisted fixes when an API key secret
+# is configured), then push a fix commit back to main — which re-triggers CI.
+# Loop safety: scripts/autofix.py caps itself at MAX_ATTEMPTS fix commits
+# after the last human commit.
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: auto-fix
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    name: Diagnose and fix CI failure
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout main (full history for attempt counting)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download CI failure diagnostics
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-logs
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ci-logs
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run auto-fixer
+        env:
+          FAILED_SHA: ${{ github.event.workflow_run.head_sha }}
+          FAILED_RUN_ID: ${{ github.event.workflow_run.id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          # Optional LLM assistance — add any of these as repository secrets:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+        run: python3 scripts/autofix.py ci-logs
+
+      - name: Push fix commit to main
+        if: env.AUTOFIX_COMMITTED == '1'
+        run: |
+          git push origin HEAD:main
+          echo "Pushed auto-fix commit ${{ env.AUTOFIX_COMMIT_SHA }} — CI will re-run automatically."
