@@ -25,7 +25,7 @@ val hasReleaseSigning = !ksFile.isNullOrBlank() && !ksPassword.isNullOrBlank() &
 
 android {
     namespace = "com.localai.runtime"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.localai.runtime"
